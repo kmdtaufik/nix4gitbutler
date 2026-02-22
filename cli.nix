@@ -20,7 +20,7 @@ pkgs.stdenv.mkDerivation {
   buildInputs = with pkgs; [
     stdenv.cc.cc.lib
     zlib
-    openssl
+    # openssl
     dbus
   ];
 

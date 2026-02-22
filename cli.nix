@@ -1,4 +1,7 @@
-{pkgs ? import <nixpkgs> {}}:
+{
+  pkgs ? import <nixpkgs> {},
+  lib ? pkgs.lib,
+}:
 pkgs.stdenv.mkDerivation {
   pname = "gitbutler-cli";
   version = "0.19.3-2869";
@@ -31,4 +34,15 @@ pkgs.stdenv.mkDerivation {
     cp $src $out/bin/but
     chmod +x $out/bin/but
   '';
+
+  meta = with lib; {
+    description = "GitButler CLI - Git, but better. Modern version control for AI-powered workflows";
+    homepage = "https://gitbutler.com";
+    downloadPage = "https://gitbutler.com/downloads";
+    changelog = "https://github.com/gitbutlerapp/gitbutler/releases";
+    # license = licenses.free;
+    platforms = platforms.linux;
+    mainProgram = "but";
+    maintainers = [kmdtaufik];
+  };
 }

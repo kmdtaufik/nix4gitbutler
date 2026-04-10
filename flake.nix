@@ -3,42 +3,58 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = {
+  outputs = inputs @ {
     self,
     nixpkgs,
-  }: let
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-  in {
-    packages.${system} = {
-      cli = pkgs.callPackage ./cli.nix {};
-      default = self.packages.${system}.cli;
-    };
+    flake-parts,
+    ...
+  }:
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      # Define the systems your flake supports
+      systems = ["x86_64-linux"];
 
-    devShells.${system}.default = pkgs.mkShell {
-      name = "gitbutler-cli-dev";
-      packages = [
-        self.packages.${system}.cli
-        pkgs.git
-        pkgs.curl
-        pkgs.jq
-      ];
-      shellHook = ''
-        echo "🚀 GitButler CLI development shell"
-        echo "   but --version: $(but --version 2>/dev/null || echo 'not built yet')"
-        echo ""
-        echo "Available commands:"
-        echo "  nix build .#     - Build the CLI"
-        echo "  ./update.sh      - Update to latest version"
-        echo "  ./update.sh -n   - Dry-run update check"
-      '';
-    };
+      perSystem = {
+        config,
+        self',
+        inputs',
+        pkgs,
+        system,
+        ...
+      }: let
+        sources = builtins.fromJSON (builtins.readFile ./sources.json);
 
-    # Overlay for easy integration into other flakes
-    overlays.default = final: prev: {
-      gitbutler-cli = self.packages.${final.system}.cli;
+        # Extract the data specifically for the system currently being built
+        arch = sources.${system} or (throw "Unsupported system: ${system}");
+      in {
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+        packages = {
+          cli = pkgs.callPackage ./cli.nix {
+            inherit (sources) version;
+            url = arch.url.cli;
+            hash = arch.hash.cli;
+          };
+          gui = pkgs.callPackage ./gui.nix {
+            inherit (sources) version;
+            url = arch.url.gui;
+            hash = arch.hash.gui;
+          };
+          default = config.packages.gui;
+        };
+
+        devShells.default = pkgs.mkShell {
+          name = "gitbutler-dev";
+          packages = [
+            pkgs.git
+            pkgs.curl
+            pkgs.jq
+          ];
+        };
+      };
     };
-  };
 }

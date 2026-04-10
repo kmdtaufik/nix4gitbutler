@@ -1,0 +1,13 @@
+{
+  "version": "0.19.7",
+  "x86_64-linux": {
+    "url": {
+      "cli": "https://releases.gitbutler.com/releases/release/0.19.7-2956/linux/x86_64/but",
+      "gui": "https://releases.gitbutler.com/releases/release/0.19.7-2956/linux/x86_64/GitButler_0.19.7_amd64.deb"
+    },
+    "hash": {
+      "cli": "sha256-1VXGGBRFA/zg0yPzrlhxm2Omg1AARbpYCr1C8w2Zf44=",
+      "gui": "sha256-/CVTeOl75rdZGHIfZUpxZqhl4sIaGevhG54OcAUHe9c="
+    }
+  }
+}

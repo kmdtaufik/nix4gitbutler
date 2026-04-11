@@ -24,7 +24,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          chmod +x ./update.nu
-          ./update.nu
+          chmod +x ./update.sh
+          ./update.sh
 
           git push

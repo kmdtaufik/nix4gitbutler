@@ -1,5 +1,5 @@
 {
-  description = "GitButler CLI Flake - Git, but better";
+  description = "GitButler NixOS Flake - Git, but better";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";

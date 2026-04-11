@@ -1,10 +1,10 @@
 <div align="center">
 
-# nix4gitbutler-cli
+# nix4gitbutler
 
 <img width="100px" src="https://gitbutler-docs-images-public.s3.us-east-1.amazonaws.com/md-logo.png" alt="GitButler logo" />
 
-**A Nix flake for the GitButler CLI (`but`)**
+**A Nix flake providing pre-compiled binaries for GitButler (GUI & CLI)**
 
 [![NixOS](https://img.shields.io/badge/NixOS-5277C3?logo=nixos&logoColor=white)](https://nixos.org/)
 [![GitButler](https://img.shields.io/badge/GitButler-CLI-blue)](https://gitbutler.com)
@@ -15,56 +15,51 @@
 
 ## About GitButler
 
-<img width="100%" src="https://gitbutler-docs-images-public.s3.us-east-1.amazonaws.com/cli-preview.png" alt="GitButler CLI preview" />
+**GitButler** is a modern Git-based version control interface built from the ground up for AI-powered workflows. This flake pulls the official upstream `.deb` and CLI binaries and patches them for NixOS, completely bypassing the heavy Rust/Tauri compile times.
 
-**GitButler** is a modern Git-based version control interface with both a GUI and CLI built from the ground up for AI-powered workflows.
+### Available Packages
 
-### Key Features
+This flake exposes two explicit outputs:
 
-- 🌿 **Stacked Branches** - Create branches stacked on others with automatic restacking
-- 🔀 **Parallel Branches** - Work on multiple branches simultaneously
-- ✏️ **Easy Commit Management** - Uncommit, reword, amend, move, split and squash commits easily
-- ⏪ **Undo Timeline** - Logs all operations for easy undo/revert
-- ⚔️ **First Class Conflicts** - Rebases always succeed; conflicts can be resolved in any order
-- 🔗 **Forge Integration** - GitHub/GitLab integration for PRs, CI statuses, etc.
-- 🤖 **AI Tooling** - Built-in AI for commit messages, branch names, PR descriptions
+- `gui` (Default): The full Tauri desktop application. This package _also_ includes the `but` CLI wrapper.
+- `cli`: The standalone, lightweight Rust binary (`but`) for terminal-only workflows.
 
-<img width="100%" src="https://gitbutler-docs-images-public.s3.us-east-1.amazonaws.com/app-preview-light.png" alt="GitButler desktop app preview" />
+🚨 **IMPORTANT: Mutual Exclusivity** 🚨
+Do **not** attempt to install both the `gui` and `cli` packages simultaneously. Because both packages provide the `/bin/but` executable, Nix's native environment builder will throw a file collision error and refuse to build your system. Choose one or the other.
 
 ---
 
 ## Installation
 
-### NixOS Configuration (flake)
+### NixOS Configuration (Flake)
 
-Add to your `flake.nix` inputs:
+Add the flake to your `flake.nix` inputs:
 
 ```nix
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nix4gitbutler.url = "github:kmdtaufik/nix4gitbutler-cli";
+    nix4gitbutler.url = "github:kmdtaufik/nix4gitbutler";
   };
 
-  outputs = { nixpkgs, nix4gitbutler, ... }: {
+  outputs = { nixpkgs, inputs, ... }: {
     nixosConfigurations.yourhostname = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [{
+
+        # 🟢 Option A: Install the full Desktop GUI (Default)
         environment.systemPackages = [
-          nix4gitbutler.packages.x86_64-linux.cli
+          inputs.nix4gitbutler.packages.x86_64-linux.default
         ];
+
+        # 🔵 Option B: Install ONLY the Terminal interface (CLI)
+        # environment.systemPackages = [
+        #   inputs.nix4gitbutler.packages.x86_64-linux.cli
+        # ];
+
       }];
     };
   };
-}
-```
-
-Or use the overlay:
-
-```nix
-{
-  nixpkgs.overlays = [ nix4gitbutler.overlays.default ];
-  environment.systemPackages = [ pkgs.gitbutler-cli ];
 }
 ```
 
@@ -72,41 +67,27 @@ Or use the overlay:
 
 ```nix
 {
-  home.packages = [
-    inputs.nix4gitbutler.packages.x86_64-linux.cli
-  ];
+  inputs = {
+    nix4gitbutler.url = "github:kmdtaufik/nix4gitbutler";
+  };
+
+  outputs = { inputs, ... }: {
+    home.packages = [
+      inputs.nix4gitbutler.packages.x86_64-linux.default # Choose GUI...
+      # inputs.nix4gitbutler.packages.x86_64-linux.cli   # ...Or CLI
+    ];
+  };
 }
 ```
 
 ### Try without installing
 
+You can run either application instantly without modifying your system configuration:
+
 ```bash
-nix run github:kmdtaufik/nix4gitbutler-cli
+# Run the Desktop GUI
+nix run github:kmdtaufik/nix4gitbutler
+
+# Run the pure CLI
+nix run github:kmdtaufik/nix4gitbutler#cli
 ```
-
----
-
-## Project Structure
-
-```
-.
-├── flake.nix    # Nix flake definition
-├── cli.nix      # Package derivation for GitButler CLI
-├── update.sh    # Auto-update script
-└── README.md    # This file
-```
-
----
-
-## Links
-
-- [GitButler Website](https://gitbutler.com)
-- [GitButler Documentation](https://docs.gitbutler.com)
-- [GitButler GitHub](https://github.com/gitbutlerapp/gitbutler)
-- [GitButler Discord](https://discord.gg/MmFkmaJ42D)
-
----
-
-## License
-
-This Nix flake is MIT licensed. GitButler itself is under a [Fair Source](https://fair.io/) license.

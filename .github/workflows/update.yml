@@ -1,30 +1,62 @@
-name: Update to latest version, and update flake inputs
+name: Auto-Update Flake & GitButler
 
 on:
   schedule:
     - cron: "0 4 * * *"
   workflow_dispatch:
 
+#REQUIRED: Grant the action permission to push commits
+permissions:
+  contents: write
+
 jobs:
   update:
-    name: Update flake inputs and gitbutler
+    name: Update, Test, and Push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check flake inputs
-        uses: DeterminateSystems/flake-checker-action@v4
-
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
 
-      - name: Check for update and perform update
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Check flake inputs
+        uses: DeterminateSystems/flake-checker-action@v4
 
+      - name: Update Flake Lockfile
+        run: nix flake update
+
+      - name: Fetch Latest GitButler Version
+        run: |
           chmod +x ./update.sh
           ./update.sh
 
-          git push
+      - name: Verify Builds (Fail-Fast)
+        run: |
+          echo "🧪 Testing CLI build..."
+          nix build .#cli
+
+          echo "🧪 Testing GUI build..."
+          nix build .#gui
+
+      - name: Commit and Push Changes
+        run: |
+          # Set up the bot identity
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage the files that might have changed
+          git add sources.json flake.lock
+
+          # Check if there is actually anything to commit
+          if git diff --staged --quiet; then
+            echo "✅ Everything is already up to date. Exiting."
+            exit 0
+          else
+            # Extract the new version to make a clean commit message
+            NEW_VERSION=$(jq -r '.version' sources.json)
+            
+            git commit -m "ci(chore): update flake lock and bump gitbutler to v$NEW_VERSION"
+            git push
+            echo "🚀 Successfully updated and pushed v$NEW_VERSION"
+          fi

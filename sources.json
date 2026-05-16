@@ -1,13 +1,13 @@
 {
-  "version": "0.19.10",
+  "version": "0.19.12",
   "x86_64-linux": {
     "url": {
-      "cli": "https://releases.gitbutler.com/releases/release/0.19.10-3025/linux/x86_64/but",
-      "gui": "https://releases.gitbutler.com/releases/release/0.19.10-3025/linux/x86_64/GitButler_0.19.10_amd64.deb"
+      "cli": "https://releases.gitbutler.com/releases/release/0.19.12-3040/linux/x86_64/but",
+      "gui": "https://releases.gitbutler.com/releases/release/0.19.12-3040/linux/x86_64/GitButler_0.19.12_amd64.deb"
     },
     "hash": {
-      "cli": "sha256-M4s214VBrjTf/MfE+PhgKFUM60q9Tbfcz6jsXz26JWM=",
-      "gui": "sha256-cewrEhuw9FssvUKgY/to8BXgVswj6/fvrNrB8nvCO8w="
+      "cli": "sha256-aA65tSy9jkaGqba2CnG0uGsU130V6kOFBtibKy2eVwE=",
+      "gui": "sha256-mgbuP87R4X1v9nS/kALpGBEWH30kPYLlsN9DpDvOzSU="
     }
   }
 }
